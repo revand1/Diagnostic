@@ -21,11 +21,11 @@ const routes = [
     name:"Result",
     component: Result
   },
-  {
-    path: "/",
-    name: "/",
-    redirect: "/dashboard-default",
-  },
+  // {
+  //   path: "/",
+  //   name: "/",
+  //   redirect: "/dashboard-default",
+  // },
   {
     path: "/dashboard-default",
     name: "Dashboard",
@@ -37,7 +37,7 @@ const routes = [
     component: Tables,
   },
   {
-    path: "/diagnostics",
+    path: "/",
     name: "Diagnostics",
     component: Diagnostics,
   },  
@@ -102,19 +102,26 @@ const router = createRouter({
 });
 
 router.beforeEach((to,from,next)=>{
-  if(store.state.currentUser == null)
+  if(to.name == 'Result')
   {
-    if (to.path !== '/signin') {
-      next('/signin');
-    } else {
-      next();
-    }
-
-
-  }
-  else{
     next()
   }
+  else{
+    if(store.state.currentUser == null)
+    {
+      if (to.path !== '/signin') {
+        next('/signin');
+      } else {
+        next();
+      }
+  
+  
+    }
+    else{
+      next()
+    }
+  }
+
  
 })
 
