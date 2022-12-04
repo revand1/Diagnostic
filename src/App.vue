@@ -29,15 +29,15 @@ Coded by www.creative-tim.com
     class="main-content position-relative max-height-vh-100 h-100 border-radius-lg"
   >
     <!-- nav -->
-    <!-- <navbar
+    <navbar
 
       :class="[navClasses]"
       :textWhite="
         this.$store.state.isAbsolute ? 'text-white opacity-8' : 'text-white'
       "
       :minNav="navbarMinimize"
-      v-if="this.$store.state.showNavbar"
-    /> -->
+      v-if="this.$store.state.showNavbar&&this.$route.name!='Result'"
+    />
     <router-view />
     <app-footer v-show="this.$store.state.showFooter" />
   </main>
@@ -45,7 +45,7 @@ Coded by www.creative-tim.com
 <script>
 import Sidenav from "./examples/Sidenav";
 // import Configurator from "@/examples/Configurator.vue";
-//import Navbar from "@/examples/Navbars/Navbar.vue";
+import Navbar from "@/examples/Navbars/Navbar.vue";
 import AppFooter from "@/examples/Footer.vue";
 import { mapMutations } from "vuex";
 
@@ -56,19 +56,24 @@ export default {
       imemediate:true,
       handler(to){
         document.title = process.env.VUE_APP_TITLE + '-' + to.name || process.env.VUE_APP_TITLE
-      }
+      },
+      
     }
   },
   components: {
     Sidenav,
     // Configurator,
-    //Navbar,
+    Navbar,
     AppFooter
   },
   methods: {
     ...mapMutations(["toggleConfigurator", "navbarMinimize"])
   },
   computed: {
+    getRoute() {
+      const routeArr = this.$route.path.split("/");
+      return routeArr[1];
+    },
     navClasses() {
       return {
         "position-sticky bg-white left-auto top-2 z-index-sticky":
@@ -88,6 +93,8 @@ export default {
     this.$store.dispatch("getTestUnit")
     this.$store.dispatch("getPatients")
     this.$store.dispatch("getDiagnosticResults")
+    this.$store.dispatch("getPathologist");
+    this.$store.dispatch("getMedtech")
   }
 };
 

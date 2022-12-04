@@ -11,6 +11,8 @@ module.exports = {
     "prettier/prettier": "off",
     "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
-    "require-atomic-updates":"off"
+    "require-atomic-updates":"off",
+    'vue/no-deprecated-slot-attribute': 'off',
+    'vue/no-deprecated-slot-scope-attribute':'off'
   }
 };

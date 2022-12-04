@@ -2,7 +2,7 @@
   <div class="py-4 container-fluid">
   <div class="card">
        <div class="card-header pb-0"> 
-        <h6>Lab Test</h6>
+        <h6>{{this.HeaderText}}</h6>
         <div class="col-12">
             <div class="row">
             <div class="col">
@@ -43,11 +43,28 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item) in this.newTestContent" :key="item.content">
+            <tr v-for="(item,index) in this.newTestContent" :key="item.content">
                 <td>{{item.content}}</td>
                 <td>{{item.unit}}</td>
                 <td>{{item.defaultValue}}</td>
-                <td>  <button type="button" class="btn btn-danger" v-on:click="removeUnit(item)">Remove</button></td>
+                <td>  <div class="row">
+                        <div class="col-lg-2 col-md-4">
+                    
+                           
+                            <button type="button"  class="btn btn-warning" data-bs-toggle="modal" data-bs-placement="bottom" title="Modify" data-bs-target="#exampleModal" @click="updateContent(index)">
+                            <i class="fa fa-pencil"></i>
+                                
+                        </button>
+                    
+                        </div>
+                        <div class="col-lg-2 col-md-4">
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#alert" @click="(removeContentValue=item, this.alert = contentAlert, this.removeMode = 0)">
+                                <i class="fa fa-trash-o"></i>
+                               
+                        </button>
+                        </div>
+                        </div>
+                    </td>
                 
             </tr>
             <tr v-if="this.newTestContent.length<=0">
@@ -59,11 +76,11 @@
             <div class="container mt-5">
                 <div class="row justify-content-end">
                 <div class="col-auto">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Clear</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="resetLabTestInput" :disabled="(newTestName==''|| newTestCode==''||newTestContent.length<=0)">Cancel</button>
                     
                 </div>
                 <div class="col-auto">
-                    <button type="button" class="btn btn-primary" v-on:click="SaveNewLabTest">Save</button>
+                    <button type="button" class="btn btn-primary" v-on:click="SaveNewLabTest" :disabled="(newTestName==''|| newTestCode==''||newTestContent.length<=0)">Save</button>
                 </div>
 
 
@@ -103,7 +120,12 @@
                 <td>{{item.name}}</td>
                 <td>{{item.code}}</td>
                 <td>{{item.contents.length}}</td>
-                <td> <button type="button" class="btn btn-success" v-on:click="EditLabTest(item,index)">Edit</button> <button type="button" class="btn btn-danger" v-on:click="removeUnit(item)">Remove</button></td>
+                <td> <button type="button" class="btn btn-success" v-on:click="EditLabTest(item,index)">Edit</button> <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#alert"  v-on:click="()=>{
+                  this.removeLabTestId = item.id
+                  this.removeMode = 1
+                  this.alert = this.labTestAlert
+                  this.removeContentValue = item
+                }">Remove</button></td>
                 
             </tr>
             <tr v-if="this.$store.state.labTest.length<=0">
@@ -128,7 +150,7 @@
             <div class="col-12">
                 <div class="form-floating mb-3">
                   
-                    <input v-model="this.newContent" autocomplete="off" class="form-control" list="contentList" id="contentListInput" placeholder="Type to search...">
+                    <input v-model="this.newContent" autocomplete="off" class="form-control" list="contentList" id="contentListInput" placeholder="Type to search..." >
                     <datalist id="contentList">
                     <option v-for="(item) in this.$store.state.testContents" :key="item" :value="item.content"></option>
                     </datalist>
@@ -138,7 +160,7 @@
             <div class="col">
                 <div class="form-floating mb-3">
                   
-                    <input class="form-control" autocomplete="off" v-model="this.newUnit" list="unitList" id="unitListInput" placeholder="Type to search...">
+                    <input class="form-control" autocomplete="off" v-model="this.newUnit" list="unitList" id="unitListInput" placeholder="Type to search..." >
                     <datalist id="unitList">
                     <option v-for="(item) in this.$store.state.units" :key="item" :value="item.code">{{item.unit}}</option>
                     </datalist>
@@ -155,8 +177,31 @@
        
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" v-on:click="addNewTestContent">Save</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetContentInput">Cancel</button>
+        <button type="button" class="btn btn-primary" :data-bs-dismiss="(contentMode>0?'modal':'')" v-on:click="addNewTestContent">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="alert" tabindex="-1" aria-labelledby="alertLabel" aria-hidden="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="alert">{{alert.title}}</h5>
+
+      </div>
+      <div class="modal-body">
+        <div class="row">
+            <div class="col-12">
+              {{alert.message}}
+            </div>
+        </div>
+       
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" v-on:click="deleteContent(removeContentValue)">Yes</button>
       </div>
     </div>
   </div>
@@ -168,12 +213,51 @@
 
 <script>
 
+
 export default {
     name:"LabTest",
+
     created(){
       this.$store.dispatch("getLabTests")
+    
     },
     methods:{
+      deleteContent(item)
+      {
+        if(item!=null)
+        {
+          if(this.removeMode==0)
+          {
+            var newContents = this.newTestContent.filter(function(value){
+        return value != item ;
+        
+    })
+    this.newTestContent = newContents
+          }
+          else{
+            this.$store.dispatch("deleteRecord",{table:"LabTests",id:this.removeLabTestId,dispatchName:"getLabTests"})
+            this.resetLabTestInput
+         
+          }
+
+       
+        }
+       
+      },
+      updateContent(index)
+      {
+        this.contentMode = 1
+        this.contentEditIndex = index
+        let data = this.newTestContent[index]
+        this.newContent = data.content
+        this.newUnit = data.unit
+        this.newDefaultValue = data.defaultValue
+      },
+      preventDefault($event){
+      
+      $event.preventDefault()
+
+      },
         SaveNewLabTest(){
             let newTest = {
                 id: this.editId,
@@ -186,7 +270,6 @@ export default {
                 this.$store.dispatch("saveLabTest",newTest)
             }
             else if(this.editIndex!== null){
-                // this.$store.commit("editLabTest",{payload:newTest,index:this.editIndex})
                 this.$store.dispatch("updateLabTest",{payload:newTest,index:this.editIndex})
             }
             this.editIndex = null
@@ -195,24 +278,63 @@ export default {
             this.newTestContent=[]
         },
         EditLabTest(value,index){
-            console.log("Edit Index " + index)
+          this.HeaderText = this.UpdateText
             this.editIndex = index
             this.editId = value.id
             this.newTestName = value.name
             this.newTestCode = value.code
             this.newTestContent = value.contents
+            this.editedContent = value
         },
         addNewTestContent(){
+          if(this.contentMode <= 0)
+          {
             let newTestContent = {
                 content: this.newContent,
                 unit: this.newUnit,
                 defaultValue: this.newDefaultValue
             }
             this.newTestContent.push(newTestContent)
+          }
+          else{
+            let testContent = {
+                content: this.newContent,
+                unit: this.newUnit,
+                defaultValue: this.newDefaultValue
+            }
+            this.newTestContent[this.contentEditIndex] = testContent
+          }
+          this.resetContentInput()
+        },
+        resetContentInput(){
+          this.newContent = ""
+          this.newUnit = ""
+          this.newDefaultValue = ""
+          this.contentEditIndex = null
+          this.editedContent = null
+          this.contentMode = 0
+        },
+        resetLabTestInput($event){
+          this.HeaderText = this.CreateText
+          this.newTestName = ""
+          this.newTestCode = ""
+          this.newTestContent = []
+          this.editIndex = null
+          this.editId = ""
+          this.resetContentInput()
+          this.$store.dispatch("getLabTests")
+          this.preventDefault($event)
         }
     },
     data(){
         return{
+          removeMode:0,
+          removeLabTestId:null,
+          removeContentValue:null,
+          contentEditIndex:null,
+          editedContent : null,
+          contentMode : 0,
+          mode:0,
             newTestName:"",
             newTestCode:"",
             newTestContent:[],
@@ -220,7 +342,24 @@ export default {
             newUnit:"",
             newDefaultValue:"",
             editIndex: null,
-            editId:""
+            editId:"",
+            CreateText:"Create New Lab Test",
+            UpdateText:"Update Selected Lab Test",
+            HeaderText:"Create New Lab Test",
+
+
+            alert:{
+              title:"Remove Content",
+              message:"Are you sure you want to remove this content?"
+            },
+            contentAlert:{
+              title:"Remove Content",
+              message:"Are you sure you want to remove this content?"
+            },
+            labTestAlert:{
+              title:"Remove Lab Test",
+              message:"Are you sure you want to remove this Lab Test?"
+            }
         }
     }
 

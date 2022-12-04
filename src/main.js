@@ -6,8 +6,10 @@ import "./assets/css/nucleo-icons.css";
 import "./assets/css/nucleo-svg.css";
 import "./assets/css/font-awesome.min.css";
 import ArgonDashboard from "./argon-dashboard";
+// import SmartTable from 'vuejs-smart-table'
 
 const appInstance = createApp(App);
+// appInstance.use(SmartTable)
 appInstance.use(store);
 appInstance.use(router);
 

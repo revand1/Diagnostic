@@ -14,12 +14,24 @@ import Patients from "../views/Patients.vue";
 import Diagnostics from "../views/DiagnosticResult.vue";
 import Result from "../views/ResultsPage.vue"
 import PageNotFound from "../views/404.vue"
+import Pathologist from "../views/Pathologist.vue"
+import Medtech from "../views/Medtech.vue"
 
 const routes = [
+  {
+    path:"/medtech",
+    name:"MedTech",
+    component: Medtech
+  },
   {
     path:"/result/:id",
     name:"Result",
     component: Result
+  },
+  {
+    path: "/pathologist",
+    name:"Pathologist",
+    component: Pathologist
   },
   // {
   //   path: "/",
@@ -124,6 +136,10 @@ router.beforeEach((to,from,next)=>{
 
  
 })
+
+
+
+
 
 
 export default router;

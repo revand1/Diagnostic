@@ -59,7 +59,7 @@
         </div>
                 <h4
                   class="mt-5 text-white font-weight-bolder position-relative"
-                >EXCEL LAB DIAGNOSTIC CENTER</h4>
+                >EXCELLAB DIAGNOSTIC CENTER</h4>
                 <p
                   class="text-white position-relative"
                 >"Quality Matters"</p>

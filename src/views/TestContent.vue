@@ -27,7 +27,7 @@
             <tr v-for="(item) in this.$store.state.testContents" :key="item.unit">
                 <td>{{item.content}}</td>
                 <td>{{item.code}}</td>
-                <td>  <button type="button" class="btn btn-danger" v-on:click="removeContent(item)">Remove</button></td>
+                <td>  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#alert" v-on:click="(removeIndex = item.id)">Remove</button></td>
                 
             </tr>
             <tr v-if="this.$store.state.testContents.length<=0">
@@ -69,7 +69,31 @@
     </div>
   </div>
 </div>
+
+<div class="modal" id="alert" tabindex="-1" aria-labelledby="alertLabel" aria-hidden="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="alert">{{alert.title}}</h5>
+
+      </div>
+      <div class="modal-body">
+        <div class="row">
+            <div class="col-12">
+              {{alert.message}}
+            </div>
+        </div>
+       
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" v-on:click="removeRecord()">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
 </div>    
+
 
  
 </template>
@@ -81,6 +105,12 @@ export default {
       this.$store.dispatch("getTestContents")
     },
     methods:{
+      removeRecord(){
+    if(this.removeIndex!=null)
+    {
+      this.$store.dispatch("deleteRecord",{table:"TestContents",id:this.removeIndex,dispatchName:"getTestContents"})
+      this.clearInput
+    } },
         addContent(){
             if(this.content != "" || this.code != ""){
               this.$store.dispatch("saveTestContent",{content:this.content,code:this.code})
@@ -96,7 +126,13 @@ export default {
     data(){
         return {
         content:"",
-        code:""
+        code:"",
+        removeIndex:null,
+
+alert:{
+  title: "Remove Content",
+  message: "Are you sure you want to remove this Content ? "
+}
         }
 
     }

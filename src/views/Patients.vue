@@ -44,7 +44,7 @@
                                 <td>{{item.gender}}</td>
                                 <td>{{item.birthdate}}</td>
                                 <td>{{item.address}}</td>
-                                <td>  <button type="button" class="btn btn-danger" v-on:click="removeUnit(item)">Remove</button></td>
+                                <td>  <button type="button" class="btn btn-danger"  data-bs-toggle="modal" data-bs-target="#alert" v-on:click="(removeIndex = item.id)">Remove</button></td>
                             </tr>
                     </tbody>
                 </table>
@@ -98,12 +98,40 @@
     </div>
   </div>
 </div>
+<div class="modal" id="alert" tabindex="-1" aria-labelledby="alertLabel" aria-hidden="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="alert">{{alert.title}}</h5>
+
+      </div>
+      <div class="modal-body">
+        <div class="row">
+            <div class="col-12">
+              {{alert.message}}
+            </div>
+        </div>
+       
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" v-on:click="removeRecord()">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
 </template>
 
 <script>
 export default {
     name:"Patients",
     methods:{
+        removeRecord(){
+    if(this.removeIndex!=null)
+    {
+      this.$store.dispatch("deleteRecord",{table:"Patients",id:this.removeIndex,dispatchName:"getPatients"})
+      this.clearInput
+    } },
         addPatient(){
             let newPatient = {}
             newPatient.fullname =this.fullname
@@ -112,7 +140,7 @@ export default {
             newPatient.address = this.address
        
 
-       this.$store.commit("addPatients",newPatient)
+       this.$store.dispatch("savePatient",newPatient)
 
    
         }
@@ -123,7 +151,13 @@ export default {
             fullname:'',
             birthdate: '',
             gender:'',
-            address:''
+            address:'',
+            removeIndex:null,
+
+alert:{
+  title: "Remove Content",
+  message: "Are you sure you want to remove this Content ? "
+}
         }
     }
 

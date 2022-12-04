@@ -1,16 +1,11 @@
 <template>
    <div class="py-4 container-fluid">
-    <div v-if="alert" class="alert alert-secondary alert-dismissible fade show" role="alert">
-  Successfully Added Unit
-  <button @click="closeAlert" type="button" class="btn-close" aria-label="Close">
-      X
-  </button>
-</div>
+    
     <div class="card">
         <div class="card-header pb-0">
         <h6>Test Unit</h6>
         <div class="col-12">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" @click="clearInput">
                 Add Unit
             </button>
         </div>
@@ -33,7 +28,7 @@
             <tr v-for="(item) in this.$store.state.units" :key="item.unit">
                 <td>{{item.unit}}</td>
                 <td>{{item.code}}</td>
-                <td>  <button type="button" class="btn btn-danger" v-on:click="removeUnit(item)">Remove</button></td>
+                <td>  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#alert" v-on:click="(removeIndex = item.id)">Remove</button></td>
                 
             </tr>
             <tr v-if="this.$store.state.units.length<=0">
@@ -77,6 +72,30 @@
     </div>
   </div>
 </div>
+
+<div class="modal" id="alert" tabindex="-1" aria-labelledby="alertLabel" aria-hidden="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="alert">{{alert.title}}</h5>
+
+      </div>
+      <div class="modal-body">
+        <div class="row">
+            <div class="col-12">
+              {{alert.message}}
+            </div>
+        </div>
+       
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" v-on:click="removeRecord()">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </template>
 
 <script>
@@ -86,17 +105,25 @@ export default {
 name: "testunit",
 created(){
   this.$store.dispatch("getTestUnit")
+ 
 },
 methods:{
+
+  removeRecord(){
+    if(this.removeIndex!=null)
+    {
+      this.$store.dispatch("deleteRecord",{table:"TestUnits",id:this.removeIndex,dispatchName:"getTestUnit"})
+      this.clearInput
+    }
+
+  },
   
     addUnit(){
         if(this.unit != "" || this.code != ""){
           this.$store.dispatch("saveTestUnit",{unit:this.unit,code:this.code})
             // this.$store.commit("addUnit",{unit:this.unit,code:this.code})
     
-        this.unit = ""
-        this.code =""
-        this.alert = true
+          this.clearInput()
         }
     },
     removeUnit(data){
@@ -104,13 +131,26 @@ methods:{
     },
     closeAlert(){
         this.alert = false;
-    }
+    },
+    clearInput(){
+      this.unit = ""
+        this.code =""
+        this.alert = true
+        this.removeIndex = null
+    },
 },
 data(){
     return{
-        alert:false,
+     
         unit:"",
         code:"",
+
+        removeIndex:null,
+
+        alert:{
+          title: "Remove Unit",
+          message: "Are you sure you want to remove this Unit ? "
+        }
     }
 }
 

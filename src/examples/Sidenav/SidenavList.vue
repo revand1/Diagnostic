@@ -30,6 +30,32 @@
           </template>
         </sidenav-item>
       </li>
+      <li class="nav-item">
+        <sidenav-item
+          url="/pathologist"
+          :class="getRoute() === 'pathologist' ? 'active' : ''"
+          :navText="'Pathologist'"
+        >
+          <template v-slot:icon>
+            <i
+              class="fa fa-first-order text-primary text-lg opacity-10"
+            ></i>
+          </template>
+        </sidenav-item>
+      </li>
+      <li class="nav-item">
+        <sidenav-item
+          url="/medtech"
+          :class="getRoute() === 'medtech' ? 'active' : ''"
+          :navText="'Medtech'"
+        >
+          <template v-slot:icon>
+            <i
+              class="fa fa-ge text-danger text-lg opacity-10"
+            ></i>
+          </template>
+        </sidenav-item>
+      </li>
       <li class="mt-3 nav-item">
         <h6
           class="text-xs ps-4 text-uppercase font-weight-bolder opacity-6"
@@ -92,7 +118,7 @@
           :navText="this.$store.state.isRTL ? 'اشتراك' : 'Sign Out'"
         >
           <template v-slot:icon>
-            <i class="ni ni-collection text-info text-sm opacity-10"></i>
+            <i class="fa fa-sign-out text-danger text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
