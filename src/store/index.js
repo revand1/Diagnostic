@@ -1,11 +1,13 @@
 import { createStore } from "vuex";
 import moment from "moment";
-import { query, collection, getDocs, addDoc,updateDoc,doc,getDoc } from "firebase/firestore"
+import { query, collection, getDocs, addDoc,updateDoc,doc,getDoc, deleteDoc, orderBy } from "firebase/firestore"
 import db from '../firebase/init.js'
 
 export default createStore({
 
   state: {
+    medtechList:[],
+    pathologist:[],
     currentUser:null,
     currentResult:null,
     units:[],
@@ -30,7 +32,13 @@ export default createStore({
     layout: "default"
   },
   mutations: {
-
+    setMedtech(state,payload){
+      state.medtechList = payload
+    },
+    setPathologist(state,payload)
+    {
+      state.pathologist = payload
+    },
     setCurrentResult(state,payload)
     {
       state.currentResult = payload
@@ -38,24 +46,6 @@ export default createStore({
 
     addDiagnosticResult(state,payload){
       let newDiagnostiResult = {}
-      state.patients.forEach((e)=>{
-        if(e.fullname == payload.patient)
-        {
-          let nowDate = new Date(Date.now())
-          let birthdate = new Date(e.birthdate)
-          let age = nowDate.getFullYear() - birthdate.getFullYear()
-          if( nowDate.getMonth() <= birthdate.getMonth() )
-          {
-            
-                  e.age -= 1
-              
-            
-          }
-
-          e.age = age
-          newDiagnostiResult.patient = e
-        }
-      })
       newDiagnostiResult.id = payload.id
       newDiagnostiResult.link ="/result/"+ newDiagnostiResult.id
       newDiagnostiResult.contents = payload.testContents
@@ -183,7 +173,7 @@ state.currentUser = payload
     //Diagnostic Result
     async getDiagnosticResults({commit})
     {
-      const docSnap = await getDocs(query(collection(db, 'DiagnosticResults')));
+      const docSnap = await getDocs(query(collection(db, 'DiagnosticResults'), orderBy("requestedDate","desc")));
       let data = []
       docSnap.forEach((doc) => {
         let payload = doc.data()
@@ -204,7 +194,7 @@ state.currentUser = payload
       docSnap.forEach((doc) => {
         let payload = doc.data()
         payload.id = doc.id
-        let convertedDate = new Date(payload.birthdate.seconds*1000)
+        let convertedDate = new Date(Date.parse(payload.birthdate))
         payload.birthdate = moment(convertedDate, 'x').format('MM/DD/YYYY')
         let age = nowDate.getFullYear() - convertedDate.getFullYear()
         if( nowDate.getMonth() <= convertedDate.getMonth() )
@@ -219,6 +209,15 @@ state.currentUser = payload
  
       })
       commit('setPatients',data)
+    },
+    async savePatient({commit},payload)
+    {
+      let data = payload
+      const colRef = collection(db, 'Patients')
+      const docRef =  await addDoc(colRef, payload)
+      data.id = docRef.id
+      console.log("Payload",data)
+      commit('addPatients',data)
     },
 
     //UNITS
@@ -324,7 +323,126 @@ state.currentUser = payload
   
 
         commit('setCurrentResult',result)
-      }
+      },
+
+
+
+      //Pathologist
+      async getPathologist({commit})
+      {
+        const docSnap = await getDocs(query(collection(db, 'Pathologist')));
+        let data = []
+        docSnap.forEach((doc) => {
+          let payload = doc.data()
+          payload.id = doc.id
+ 
+          data.push(payload)
+   
+        })
+        commit('setPathologist',data)
+      },
+      async savePathologist(_,payload)
+       {
+        console.log(payload)
+         let data = payload
+         const colRef = collection(db, 'Pathologist')
+         const docRef =  await addDoc(colRef, payload)
+         data.id = docRef.id
+       this.dispatch("getPathologist")
+     
+       },
+       async updatePathologist(_,payload)
+       {
+        console.log(payload)
+         let data = payload
+         await updateDoc(doc(db, 'Pathologist', data.id), {
+        
+          name: data.name,
+          license:data.license,
+          signatureImage:data.signatureImage
+
+        })
+        this.dispatch("getPathologist")
+     
+       },
+       async deletePathologist(_,id)
+       {
+        await deleteDoc(doc(db, 'Pathologist', id))
+        this.dispatch("getPathologist")
+       },
+
+       async deleteRecord(_,{table,id,dispatchName})
+       {
+        console.log('table',table)
+        console.log('id',id)
+        await deleteDoc(doc(db, table, id))
+        this.dispatch(dispatchName);
+    
+       },
+
+
+
+
+        //Medtech
+      async getMedtech({commit})
+      {
+        const docSnap = await getDocs(query(collection(db, 'Medtech')));
+        let data = []
+        docSnap.forEach((doc) => {
+          let payload = doc.data()
+          payload.id = doc.id
+ 
+          data.push(payload)
+   
+        })
+        commit('setMedtech',data)
+      },
+      async saveMedtech(_,payload)
+       {
+        console.log(payload)
+         let data = payload
+         const colRef = collection(db, 'Medtech')
+         const docRef =  await addDoc(colRef, payload)
+         data.id = docRef.id
+       this.dispatch("getMedtech")
+     
+       },
+       async updateMedtech(_,payload)
+       {
+        console.log(payload)
+         let data = payload
+         await updateDoc(doc(db, 'Medtech', data.id), {
+        
+          name: data.name,
+          license:data.license,
+          signatureImage:data.signatureImage
+
+        })
+        this.dispatch("getMedtech")
+     
+       },
+       async deleteMedtech(_,id)
+       {
+        await deleteDoc(doc(db, 'Medtech', id))
+        this.dispatch("getMedtech")
+       }
   },
-  getters: {}
+  getters: {
+    getLabtestByValue:(state)=>(value)=>{
+      console.log("Contents",state.labTest)
+      return state.labTest.indexOf(value)
+    },
+    getPathologistById: (state) => (id) => {
+      return state.pathologist.find(pathologist => pathologist.id === id)
+    },
+    getPathologistByName: (state) => (name) => {
+      return state.pathologist.find(data => data.name === name)
+    },
+    getMedtechById: (state) => (id) => {
+      return state.medtechList.find(pathologist => pathologist.id === id)
+    },
+    getMedtechByName: (state) => (name) => {
+      return state.medtechList.find(data => data.name === name)
+    },
+  }
 });

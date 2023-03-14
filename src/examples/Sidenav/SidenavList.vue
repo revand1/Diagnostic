@@ -87,8 +87,9 @@
       </li>
       <li class="nav-item">
         <sidenav-item
-          url="/signin"
-          :class="getRoute() === 'signup' ? 'active' : ''"
+        url="/signout"
+         @click="SignOut"
+        
           :navText="this.$store.state.isRTL ? 'اشتراك' : 'Sign Out'"
         >
           <template v-slot:icon>
@@ -120,6 +121,10 @@ export default {
     SidenavItem,
   },
   methods: {
+    SignOut(){
+      this.$store.state.currentUser = null
+      window.location.assign('/signin')
+    },
     getRoute() {
       const routeArr = this.$route.path.split("/");
       return routeArr[1];

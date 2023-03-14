@@ -100,7 +100,7 @@ methods:{
         }
     },
     removeUnit(data){
-        this.$store.commit("removeUnit",data)
+        this.$store.dispatch("removeUnit",data)
     },
     closeAlert(){
         this.alert = false;

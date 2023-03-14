@@ -90,7 +90,7 @@ export default {
             }
         },
         removeContent(data){
-        this.$store.commit("removeContent",data)
+        this.$store.dispatch("removeContent",data)
     },
     },
     data(){
